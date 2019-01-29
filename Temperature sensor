@@ -1,0 +1,85 @@
+#define CHANNEL1 13//RelayIN1
+#define CHANNEL2 12//RelayIN2
+
+#include <OneWire.h>
+#include <FarmTemperature.h>
+
+// Data wire is plugged into pin 3 on the Arduino
+#define ONE_WIRE_BUS 3
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Farm Temperature. 
+FarmTemperature sensors(&oneWire);
+DeviceAddress inside = { 0x28, 0xB3, 0x58, 0x66, 0x04, 0x00, 0x00, 0xEC };
+DeviceAddress outside = { 0x28, 0x12, 0x31, 0x66, 0x04, 0x00, 0x00, 0x65 };
+  
+
+
+void setup()
+{ 
+  // start serial port
+  Serial.begin(9600);
+  // Start up the library
+
+
+  sensors.begin();
+  // set the resolution to 10 bit (good enough?)
+// sensors.setResolution(inside, 10);
+// sensors.setResolution(outside, 10);
+
+
+
+  Serial.begin(9600);
+  float InsideTempC = sensors.getTempC(inside);
+  float OutsideTempC = sensors.getTempC(outside);
+  
+  pinMode(CHANNEL1, OUTPUT);
+  pinMode(CHANNEL2, OUTPUT);
+  Serial.println("Ready. Type 0 to reset all relays, 1 - 4 to activate a relay.");
+}
+
+void printTemperature(DeviceAddress deviceAddress)
+{
+  float tempC = sensors.getTempC(deviceAddress);
+
+if (tempC == -127.00) {
+    Serial.print("Error getting temperature");
+  } else {
+    Serial.print("C: ");
+    Serial.print(tempC);
+    Serial.print(" F: ");
+    Serial.print(FarmTemperature::toFahrenheit(tempC));
+  }
+}
+
+void loop() {
+  
+float insideTempC = sensors.getTempC(inside);
+float outsideTempC = sensors.getTempC(outside);
+
+  delay(2000);
+  //Serial.print("Getting temperatures...\n\r");
+  sensors.requestTemperatures();
+  
+  Serial.print("Inside: ");
+  Serial.print(int(inside));
+  printTemperature(inside);
+  Serial.print("\n\r");
+  
+  Serial.print("Furnace: ");
+  Serial.print(int(outside));
+  printTemperature(outside);
+  Serial.print("\n\r");
+     
+  
+if (insideTempC >= outsideTempC) //Trip relay if temp is exceeded
+{
+  digitalWrite(CHANNEL1, LOW); 
+   delay(4000); 
+  digitalWrite(CHANNEL1, HIGH);
+}
+
+
+
+
+} // LEAVE THIS ONE HERE FOR LOOP COMPLETION
