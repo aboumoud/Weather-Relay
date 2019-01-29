@@ -1,0 +1,24 @@
+void updateLed_A_State()
+{
+  switch( led_A_State )
+  {
+    case LOW:
+      if (currentMillis - previousLed_A_Millis >= led_A_Interval)
+      {
+        led_A_State = HIGH;
+        previousLed_A_Millis = currentMillis;
+      }
+      break;
+      
+    case HIGH:
+      if (currentMillis - previousLed_A_Millis >= blinkDuration) 
+      {
+        led_A_State = LOW;
+        previousLed_A_Millis = currentMillis;
+      }
+      break;
+      
+    default:
+      break;
+  }
+}
